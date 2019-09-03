@@ -1,9 +1,9 @@
-**__pycache__/
-**.cfg
-**.log
-**.backup
-**.BACKUP
-**.recent.txt
+__pycache__/
+*.cfg
+*.log
+*.backup
+*.BACKUP
+*.recent.txt
 pool_actions.txt
 pool_colors.txt
 templates.txt
