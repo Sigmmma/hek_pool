@@ -36,8 +36,8 @@ setup(
         },
     platforms=["POSIX", "Windows"],
     #keywords="",
-    install_requires=['supyr_struct', 'threadsafe_tkinter'],
-    requires=['supyr_struct', 'threadsafe_tkinter'],
+    install_requires=['supyr_struct', 'threadsafe_tkinter', 'mozzarilla'],
+    requires=['supyr_struct', 'threadsafe_tkinter', 'mozzarilla'],
     provides=['hek_pool'],
     classifiers=[
         "Development Status :: 4 - Beta",

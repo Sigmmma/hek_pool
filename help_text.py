@@ -1,7 +1,6 @@
-import os
+import pathlib
 import tempfile
 import traceback
-from hek_pool.util import get_cwd
 from hek_pool import constants
 
 README_TEXT = ''';                         WHAT IS POOL
@@ -622,19 +621,22 @@ The argument types are as follows:
     if save_to_file:
         try:
             try:
-                fp = os.path.join(get_cwd(__file__), constants.HELP_NAME)
-                with open(fp, "w") as f:
+                fp = constants.HELP_PATH
+                with fp.open("w") as f:
                     f.write(help_text)
             except Exception:
-                fp = os.path.join(tempfile.gettempdir(), constants.HELP_NAME)
-                with open(fp, "w") as f:
+                print(format_exc())
+                fp = pathlib.Path(tempfile.gettempdir(), "pool_help.txt")
+                with fp.open("w") as f:
                     f.write(help_text)
 
-            return fp
         except Exception:
             print(traceback.format_exc())
+            fp = None
 
-        return help_text
+        return fp
+
+    return help_text
 
 
 if __name__ == "__main__":

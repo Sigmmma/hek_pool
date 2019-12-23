@@ -7,6 +7,7 @@ import threadsafe_tkinter as tk
 import tkinter.ttk as ttk
 import zipfile
 
+from pathlib import Path
 from time import time, sleep
 from threading import Thread
 from tkinter.filedialog import askopenfilenames, askopenfilename,\
@@ -15,16 +16,13 @@ from tkinter.font import Font
 from tkinter import messagebox
 from traceback import format_exc
 
-from supyr_struct.defs.constants import PATHDIV
-
 import hek_pool
-
 from hek_pool import constants as const
 from hek_pool.config_def import config_def, CFG_DIRS
 from hek_pool.help_text import README_TEXT,\
      TOOL_COMMAND_HELP, DIRECTIVES_HELP, generate_help
 from hek_pool.util import ProcController, sanitize_path, do_subprocess,\
-     float_to_str, get_cwd, do_executable_patch
+     float_to_str, do_executable_patch, is_path_empty
 
 try:
     from binilla.windows.about_window import AboutWindow
@@ -47,14 +45,13 @@ elif platform == "darwin":
     # leaving this here just in case it somehow works though.
     TEXT_EDITOR_NAME = "TextEdit"
 elif platform == "linux":
-    TEXT_EDITOR_NAME = "nano"
+    TEXT_EDITOR_NAME = "vim"
 else:
     # idfk
     TEXT_EDITOR_NAME = "vim"
 
 
-curr_dir = get_cwd(__file__)
-default_config_path = curr_dir + '%shek_pool.cfg' % PATHDIV
+curr_dir = str(const.WORKING_DIR)
 using_console = bool(sys.stdout)
 if using_console:
     try:
@@ -65,7 +62,7 @@ if using_console:
         using_console = False
 
 
-program_files_dir = ':\\Program Files'
+program_files_dir = ':/Program Files'
 for char in 'CDEFGHIJKLMNOPQRSTUVWXYZ':
     if os.path.exists(char + program_files_dir + ' (x86)'):
         program_files_dir += ' (x86)'
@@ -75,7 +72,7 @@ for char in 'CDEFGHIJKLMNOPQRSTUVWXYZ':
 
 program_files_dir = char + program_files_dir
 halo_dir = os.path.join(
-    program_files_dir, 'Microsoft Games\\Halo Custom Edition')
+    program_files_dir, 'Microsoft Games', 'Halo Custom Edition')
 
 VALID_DIRECTIVES = tuple(const.DIRECTIVES)
 
@@ -120,18 +117,17 @@ def patch_tool_tag_indexing(tool_path, backup=True):
 def file_open_error(master, filepath):
     messagebox.showerror(
         "Failed to open/read/write a file.",
-        'Could not open "%s".\nRun Pool as admin to fix this.' % filepath,
+        'Could not open "%s".' % filepath,
         parent=master)
 
 
 def fix_ogg_encoder_dlls(master, cwd):
     # replace the bad and broken ogg dll's with working ones
-    dll_zip_path = os.path.join(curr_dir, const.OGG_DLL_ZIP_NAME)
-    if not os.path.isfile(dll_zip_path):
+    if not const.OGG_DLL_ZIP_PATH.is_file():
         return
 
     try:
-        with zipfile.ZipFile(dll_zip_path) as dll_zip:
+        with zipfile.ZipFile(str(const.OGG_DLL_ZIP_PATH)) as dll_zip:
             for name in ("ogg", "vorbis", "vorbisenc", "vorbisfile"):
                 name += '.dll'
                 fp = os.path.join(cwd, name).replace('/', '\\')
@@ -234,9 +230,9 @@ class HekPool(tk.Tk):
     patch_tool_tag_indexing = None
     proc_limit = None
 
-    last_load_dir = halo_dir
-    working_dir = curr_dir
-    commands_lists_dir = os.path.join(curr_dir, "cmd_lists")
+    last_load_dir = str(halo_dir)
+    working_dir = str(curr_dir)
+    commands_lists_dir = str(const.CMD_LISTS_DIR)
 
     tool_paths = ()
 
@@ -248,7 +244,7 @@ class HekPool(tk.Tk):
     config_def = config_def
     config_file = None
     config_version = 1
-    config_path = default_config_path
+    _config_path = Path(const.SETTINGS_DIR, "hek_pool.cfg")
 
     '''Miscellaneous properties'''
     app_name = "Pool"  # the name of the app(used in window title)
@@ -259,6 +255,7 @@ class HekPool(tk.Tk):
         "hek_pool",
         "supyr_struct",
         "threadsafe_tkinter",
+        "mozzarilla",
         )
 
     app_bitmap_filepath = ""
@@ -295,22 +292,14 @@ class HekPool(tk.Tk):
 
         self.processes = {}
         self.tool_paths = []
-        
-        self.app_bitmap_filepath = os.path.join(curr_dir, 'pool.png')
-        if not os.path.isfile(self.app_bitmap_filepath):
-            self.app_bitmap_filepath = os.path.join(curr_dir, 'icons', 'pool.png')
-        if not os.path.isfile(self.app_bitmap_filepath):
-            self.app_bitmap_filepath = ""
 
-        try:
-            try:
-                self.icon_filepath = os.path.join(curr_dir, 'pool.ico')
-                self.iconbitmap(self.icon_filepath)
-            except Exception:
-                self.icon_filepath = os.path.join(curr_dir, 'icons', 'pool.ico')
-                self.iconbitmap(self.icon_filepath)
-        except Exception:
-            self.icon_filepath = ""
+        self.app_bitmap_filepath = const.POOL_BITMAP_PATH
+        if not const.IS_LNX:
+            self.icon_filepath = const.POOL_ICON_PATH
+            if self.icon_filepath:
+                self.iconbitmap(str(self.icon_filepath))
+
+        if is_path_empty(self.icon_filepath):
             print("Could not load window icon.")
 
         if type(self).fixed_font is None:
@@ -407,7 +396,7 @@ class HekPool(tk.Tk):
         ''' LOAD THE CONFIG '''
         if self.config_file is not None:
             pass
-        elif os.path.isfile(self.config_path):
+        elif self.config_path.is_file():
             # load the config file
             try:
                 self.load_config()
@@ -507,7 +496,7 @@ class HekPool(tk.Tk):
         self.load_actions()
 
         if os.path.isfile(os.path.join(
-                self.commands_lists_dir, const.LAST_CMD_LIST_NAME + '.txt')):
+                self.commands_lists_dir, str(const.LAST_CMD_LIST_NAME) + '.txt')):
             self.load_commands_list(const.LAST_CMD_LIST_NAME)
         else:
             self.start_readme()
@@ -526,6 +515,15 @@ class HekPool(tk.Tk):
                 "This will also redirect all tool output to the console, which "
                 "is very hard to read with 3+ tool commands going all at once.",
                 parent=self.commands_text)
+
+    @property
+    def config_path(self):
+        return self._config_path
+    @config_path.setter
+    def config_path(self, new_val):
+        if not isinstance(new_val, Path):
+            new_val = Path(new_val)
+        self._config_path = new_val
 
     def start_readme(self):
         if self._execution_state:
@@ -810,28 +808,28 @@ class HekPool(tk.Tk):
         Thread(target=self._show_help_in_text_editor, daemon=True).start()
 
     def _show_help_in_text_editor(self):
+        help_path = generate_help(True)
         try:
-            help_path = generate_help(True)
             proc_controller = ProcController(abandon=True)
-            self._start_process(None, TEXT_EDITOR_NAME, (help_path, ),
+            self._start_process(None, TEXT_EDITOR_NAME, (str(help_path), ),
                                 proc_controller=proc_controller)
         except Exception:
             print(format_exc())
-            print("Could not open %s" % const.HELP_NAME)
+            print("Could not open: %s" % help_path)
 
     def edit_style_in_text_editor(self):
         Thread(target=self._edit_style_in_text_editor, daemon=True).start()
 
     def _edit_style_in_text_editor(self):
-        style_path = os.path.join(self.working_dir, const.STYLE_CFG_NAME)
-        if not os.path.isfile(style_path):
+        if not const.STYLE_CFG_PATH.is_file():
             self.save_style()
-            if not os.path.isfile(style_path):
+            if not const.STYLE_CFG_PATH.is_file():
                 return
 
         try:
             proc_controller = ProcController()
-            self._start_process(None, TEXT_EDITOR_NAME, (style_path, ),
+            self._start_process(None, TEXT_EDITOR_NAME,
+                                (str(const.STYLE_CFG_PATH), ),
                                 proc_controller=proc_controller)
 
             while proc_controller.returncode is None:
@@ -840,21 +838,21 @@ class HekPool(tk.Tk):
             self.apply_style()
         except Exception:
             print(format_exc())
-            print("Could not open %s" % const.STYLE_CFG_NAME)
+            print("Could not open: %s" % const.STYLE_CFG_PATH)
 
     def edit_actions_in_text_editor(self):
         Thread(target=self._edit_actions_in_text_editor, daemon=True).start()
 
     def _edit_actions_in_text_editor(self):
-        actions_path = os.path.join(self.working_dir, const.ACTIONS_CFG_NAME)
-        if not os.path.isfile(actions_path):
+        if not const.ACTIONS_CFG_PATH.is_file():
             self.save_actions()
-            if not os.path.isfile(actions_path):
+            if not const.ACTIONS_CFG_PATH.is_file():
                 return
 
         try:
             proc_controller = ProcController()
-            self._start_process(None, TEXT_EDITOR_NAME, (actions_path, ),
+            self._start_process(None, TEXT_EDITOR_NAME,
+                                (str(const.ACTIONS_CFG_PATH), ),
                                 proc_controller=proc_controller)
 
             while proc_controller.returncode is None:
@@ -862,15 +860,14 @@ class HekPool(tk.Tk):
             self.load_actions()
         except Exception:
             print(format_exc())
-            print("Could not open %s" % const.ACTIONS_CFG_NAME)
+            print("Could not open: %s" % const.ACTIONS_CFG_PATH)
 
     def load_actions(self):
         try:
-            actions_path = os.path.join(self.working_dir, const.ACTIONS_CFG_NAME)
-            if not os.path.isfile(actions_path):
+            if not const.ACTIONS_CFG_PATH.is_file():
                 return
 
-            with open(actions_path, 'r') as f:
+            with const.ACTIONS_CFG_PATH.open('r') as f:
                 data = ''
                 for line in f:
                     line = line.replace('\t', ' ').replace('\r', '\n').\
@@ -922,15 +919,15 @@ class HekPool(tk.Tk):
             sanitized_new_actions.append([casc_name] + sanitized_items)
 
         if malformed:
-            print("Could not load %s as it is malformed." % const.ACTIONS_CFG_NAME)
+            print("Could not load %s as it is malformed." %
+                  const.ACTIONS_CFG_PATH)
         else:
             del const.ACTION_MENU_LAYOUT[:]
             const.ACTION_MENU_LAYOUT.extend(sanitized_new_actions)
 
     def save_actions(self):
-        fp = os.path.join(self.working_dir, const.ACTIONS_CFG_NAME)
         try:
-            with open(fp, 'w') as f:
+            with const.ACTIONS_CFG_PATH.open('w') as f:
                 f.write("""
 ; This file controls what shows up in the actions menu when you
 ; right-click an empty line or access it through the menu bar.
@@ -976,7 +973,7 @@ class HekPool(tk.Tk):
                     f.write(";     %s\n" % name)
                     f.write(";         %s\n" % const.SPECIAL_ACTIONS_KWDS[name])
         except Exception:
-            file_open_error(self.commands_text, fp)
+            file_open_error(self.commands_text, const.ACTIONS_CFG_PATH)
 
     def do_clipboard_action(self, event_type):
         cmd_text = self.commands_text
@@ -1231,7 +1228,9 @@ class HekPool(tk.Tk):
     def load_config(self, filepath=None):
         if filepath is None:
             filepath = self.config_path
-        assert os.path.exists(filepath)
+
+        filepath = Path(filepath)
+        assert filepath.is_file()
 
         # load the config file
         self.config_file = self.config_def.build(filepath=filepath)
@@ -1243,11 +1242,10 @@ class HekPool(tk.Tk):
 
     def load_style(self):
         try:
-            style_path = os.path.join(self.working_dir, const.STYLE_CFG_NAME)
-            if not os.path.isfile(style_path):
+            if not const.STYLE_CFG_PATH.is_file():
                 return
 
-            with open(style_path, 'r') as f:
+            with const.STYLE_CFG_PATH.open('r') as f:
                 data = ''
                 for line in f:
                     line = line.replace('\t', ' ').replace('\r', '\n').\
@@ -1294,14 +1292,14 @@ class HekPool(tk.Tk):
                         new_colors[c] = '#' + new_color
 
         if malformed:
-            print("Could not load %s as it is malformed." % const.STYLE_CFG_NAME)
+            print("Could not load '%s' as it is malformed." %
+                  const.STYLE_CFG_PATH)
         else:
             const.text_tags_colors.update(new_style)
 
     def save_style(self):
-        fp = os.path.join(self.working_dir, const.STYLE_CFG_NAME)
         try:
-            with open(fp, 'w') as f:
+            with const.STYLE_CFG_PATH.open('w') as f:
                 f.write(
                 """
 ; These sets of hex values determine the letter(fg) and background(bg) colors
@@ -1316,11 +1314,13 @@ class HekPool(tk.Tk):
                                 (color_name, colors[color_name][1:]))
                     f.write("    )\n")
         except Exception:
-            file_open_error(self.commands_text, fp)
+            file_open_error(self.commands_text, const.STYLE_CFG_PATH)
 
     def make_config(self, filepath=None):
         if filepath is None:
             filepath = self.config_path
+
+        filepath = Path(filepath)
 
         # create the config file from scratch
         self.config_file = self.config_def.build()
@@ -1961,7 +1961,7 @@ class HekPool(tk.Tk):
 
         for log_path in log_paths:
             if not os.path.isfile(log_path): continue
-            try: self._start_process(None, TEXT_EDITOR_NAME, (log_path, ))
+            try: self._start_process(None, TEXT_EDITOR_NAME, (str(log_path), ))
             except Exception: pass
 
     def generate_tools_menu(self):
