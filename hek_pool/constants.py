@@ -1,12 +1,43 @@
+from pathlib import Path
+
+from hek_pool.util import get_cwd
+from mozzarilla.editor_constants import *
 from supyr_struct.defs.frozen_dict import FrozenDict
+
+
+POOLLIB_DIR = get_cwd(__file__)
+
+POOL_ICON_PATH = Path(POOLLIB_DIR, "pool.ico")
+if not POOL_ICON_PATH.is_file():
+    POOL_ICON_PATH = Path(POOLLIB_DIR, "icons", "pool.ico")
+if not POOL_ICON_PATH.is_file():
+    POOL_ICON_PATH = Path(WORKING_DIR, "pool.ico")
+if not POOL_ICON_PATH.is_file():
+    POOL_ICON_PATH = Path(WORKING_DIR, "icons", "pool.ico")
+if not POOL_ICON_PATH.is_file():
+    POOL_ICON_PATH = ""
+
+POOL_BITMAP_PATH = Path(POOLLIB_DIR, "pool.png")
+if not POOL_BITMAP_PATH.is_file():
+    POOL_BITMAP_PATH = Path(POOLLIB_DIR, "icons", "pool.png")
+if not POOL_BITMAP_PATH.is_file():
+    POOL_BITMAP_PATH = Path(WORKING_DIR, "pool.png")
+if not POOL_BITMAP_PATH.is_file():
+    POOL_BITMAP_PATH = Path(WORKING_DIR, "icons", "pool.png")
+if not POOL_BITMAP_PATH.is_file():
+    POOL_BITMAP_PATH = ""
 
 MAX_PROCESS_CT = 64
 
-HELP_NAME = "pool_help.txt"
-STYLE_CFG_NAME = "pool_colors.txt"
-ACTIONS_CFG_NAME = "pool_actions.txt"
+CMD_LISTS_DIR = SETTINGS_DIR.joinpath("pool_cmd_lists")
+STYLE_CFG_PATH = SETTINGS_DIR.joinpath("pool_colors.txt")
+ACTIONS_CFG_PATH = SETTINGS_DIR.joinpath("pool_actions.txt")
+HELP_PATH = SETTINGS_DIR.joinpath("pool_help.txt")
+
+OGG_DLL_ZIP_PATH = POOLLIB_DIR.joinpath("ogg_v1.1.2_dll_fix.zip")
+
 LAST_CMD_LIST_NAME = ".recent"
-OGG_DLL_ZIP_NAME = "ogg_v1.1.2_dll_fix.zip"
+
 
 BLACK_COLOR = '#%02x%02x%02x' % (0, 0, 0)  # black
 
@@ -370,3 +401,7 @@ ACTION_MENU_LAYOUT = [
     "<<divider>>",
     ("All Pool Directives", *(k for k in sorted(DIRECTIVES))),
     ]
+
+# not for export
+del Path
+del get_cwd
