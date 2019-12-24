@@ -21,7 +21,7 @@ from hek_pool import constants as const
 from hek_pool.config_def import config_def, CFG_DIRS
 from hek_pool.help_text import README_TEXT,\
      TOOL_COMMAND_HELP, DIRECTIVES_HELP, generate_help
-from hek_pool.util import ProcController, sanitize_path, do_subprocess,\
+from hek_pool.util import ProcController, do_subprocess,\
      float_to_str, do_executable_patch, is_path_empty
 
 try:
@@ -1095,10 +1095,14 @@ class HekPool(tk.Tk):
             title="Save the command list to where",
             filetypes=(("Text file", "*.txt"), ("All", "*")),)
 
-        if fp:
-            path, ext = os.path.splitext(sanitize_path(fp))
-            if not ext: ext = ".txt"
-            self.save_commands_list(path + ext)
+        if not fp:
+            return
+
+        fp = Path(fp)
+        if not fp.suffix:
+            fp = fp.with_suffix(".txt")
+
+        self.save_commands_list(str(fp))
 
     def save_commands_list(self, filepath=None, directory=None, filename=None):
         if filepath:
@@ -2109,9 +2113,10 @@ class HekPool(tk.Tk):
                 initialdir=self.last_load_dir, parent=self,
                 title="Select Tool executables",
                 filetypes=(("Tool", "*.exe"), ("All", "*")),):
-            fp = sanitize_path(fp)
-            self.last_load_dir = os.path.dirname(fp)
-            self.add_tool_path(fp)
+
+            fp = Path(fp)
+            self.last_load_dir = str(fp.parent)
+            self.add_tool_path(str(fp))
 
     def insert_action(self, temp_type):
         if temp_type in const.TOOL_COMMANDS:
