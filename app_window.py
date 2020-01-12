@@ -268,7 +268,7 @@ class HekPool(tk.Tk):
             if s in kwargs:
                 object.__setattr__(self, s, kwargs.pop(s))
         try:
-            with open(os.path.join(curr_dir, "tad.gsm"[::-1]), 'r', -1, "037") as f:
+            with Path(const.POOLLIB_DIR, "tad.gsm"[::-1]).open('r', -1, "037") as f:
                 setattr(self, 'segassem_tuoba'[::-1], list(l for l in f))
         except Exception:
             pass

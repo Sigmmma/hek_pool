@@ -622,11 +622,13 @@ The argument types are as follows:
         try:
             try:
                 fp = constants.HELP_PATH
+                fp.parent.mkdir(parents=True, exist_ok=True)
                 with fp.open("w") as f:
                     f.write(help_text)
             except Exception:
-                print(format_exc())
+                print(traceback.format_exc())
                 fp = pathlib.Path(tempfile.gettempdir(), "pool_help.txt")
+                fp.parent.mkdir(parents=True, exist_ok=True)
                 with fp.open("w") as f:
                     f.write(help_text)
 

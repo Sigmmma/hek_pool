@@ -1,11 +1,10 @@
 from pathlib import Path
 
-from hek_pool.util import get_cwd
 from mozzarilla.editor_constants import *
 from supyr_struct.defs.frozen_dict import FrozenDict
 
 
-POOLLIB_DIR = get_cwd(__file__)
+POOLLIB_DIR = Path(__file__).parent
 
 POOL_ICON_PATH = Path(POOLLIB_DIR, "pool.ico")
 if not POOL_ICON_PATH.is_file():
@@ -404,4 +403,3 @@ ACTION_MENU_LAYOUT = [
 
 # not for export
 del Path
-del get_cwd
