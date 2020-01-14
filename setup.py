@@ -23,8 +23,8 @@ setup(
     #description='',
     long_description=long_desc,
     version='%s.%s.%s' % hek_pool.__version__,
-    url='http://bitbucket.org/moses_of_egypt/hek_pool',
-    author='Devin Bobadilla',
+    url=hek_pool.__website__,
+    author=hek_pool.__author__,
     author_email='MosesBobadilla@gmail.com',
     license='MIT',
     packages=[
@@ -36,7 +36,7 @@ setup(
         },
     platforms=["POSIX", "Windows"],
     #keywords="",
-    install_requires=['supyr_struct', 'threadsafe_tkinter', 'mozzarilla'],
+    install_requires=['supyr_struct>=1.4.0', 'threadsafe_tkinter', 'mozzarilla>=1.7.0'],
     requires=['supyr_struct', 'threadsafe_tkinter', 'mozzarilla'],
     provides=['hek_pool'],
     classifiers=[
