@@ -1,22 +1,12 @@
 #!/usr/bin/env python
-from os.path import dirname, join
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
-curr_dir = dirname(__file__)
-
 import hek_pool
 
-
-try:
-    try:
-        long_desc = open(join(curr_dir, "readme.rst")).read()
-    except Exception:
-        long_desc = open(join(curr_dir, "readme.md")).read()
-except Exception:
-    long_desc = 'Could not read long description from readme.'
+long_desc = open("readme.txt").read()
 
 setup(
     name='hek_pool',
@@ -31,12 +21,15 @@ setup(
         'hek_pool',
         ],
     package_data={
-        '': ['*.txt', '*.md', '*.rst', '*.pyw', '*.ico', '*.png', 'msg.dat'],
-        'hek_pool': ['cmd_lists/*.txt', 'ogg_v1.1.2_dll_fix.zip'],
+        'hek_pool': [
+            # TODO: Is cmd_lists properly included like this?
+            'cmd_lists/*.txt', 'ogg_v1.1.2_dll_fix.zip', '*.txt',
+            '*.md', '*.rst', '*.pyw', '*.ico', '*.png', 'msg.dat',
+            ],
         },
     platforms=["POSIX", "Windows"],
     #keywords="",
-    install_requires=['supyr_struct>=1.4.0', 'threadsafe_tkinter', 'mozzarilla>=1.7.0'],
+    install_requires=['supyr_struct', 'threadsafe_tkinter', 'mozzarilla'],
     requires=['supyr_struct', 'threadsafe_tkinter', 'mozzarilla'],
     provides=['hek_pool'],
     classifiers=[
@@ -45,6 +38,11 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3 :: Only",
         ],
     zip_safe=False,
     )
