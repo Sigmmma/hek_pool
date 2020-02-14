@@ -16,6 +16,7 @@ setup(
     name='hek_pool',
     #description='',
     long_description=long_desc,
+    long_description_content_type='text/markdown',
     version='%s.%s.%s' % hek_pool.__version__,
     url=hek_pool.__website__,
     author=hek_pool.__author__,
