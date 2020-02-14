@@ -6,7 +6,11 @@ except ImportError:
 
 import hek_pool
 
-long_desc = open("README.txt").read()
+long_desc = ""
+try:
+    long_desc = open("README.txt").read()
+except Exception:
+    print("Couldn't read readme.")
 
 setup(
     name='hek_pool',
