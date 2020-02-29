@@ -20,7 +20,7 @@ setup(
     version='%s.%s.%s' % hek_pool.__version__,
     url=hek_pool.__website__,
     author=hek_pool.__author__,
-    author_email='MosesBobadilla@gmail.com',
+    author_email='MoeMakesStuff@gmail.com',
     license='MIT',
     packages=[
         'hek_pool',
@@ -29,7 +29,7 @@ setup(
         'hek_pool': [
             # TODO: Is cmd_lists properly included like this?
             'cmd_lists/*.txt', 'ogg_v1.1.2_dll_fix.zip', '*.txt',
-            '*.md', '*.rst', '*.pyw', '*.ico', '*.png', 'msg.dat',
+            '*.[mM][dD]', '*.rst', '*.pyw', '*.ico', '*.png', 'msg.dat',
             ],
         },
     platforms=["POSIX", "Windows"],
